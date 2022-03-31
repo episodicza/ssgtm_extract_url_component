@@ -1,0 +1,6 @@
+homepage: "https://github.com/episodicza/ssgtm_extract_url_component"
+documentation: "https://github.com/episodicza/ssgtm_extract_url_component#readme"
+versions:
+  - sha: cbfe3e419d43584ec6fb9360bba1e68b78209a98
+    changeNotes: Initial release.
+    
