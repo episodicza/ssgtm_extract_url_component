@@ -42,9 +42,27 @@ You can opt to strip the query string seperator ('?') from the result by checkin
 Choose _Query Parameters_ from the _Component Type_ dropdown. Enter a parameter name in the _Query Key_ option. This will scan the query string for that parameter and return the first matching value (URL decoded).
 
 For example:
-- with a URL as `https://www.example.com?gclid=abc123` and `gclid` in the _Query Key_, your return falue would be `abc123`
-- with a URL as `https://www.example.com?gclid=abc123` and `xyz` in the _Query Key_, your return falue would be `undefined` (or `""`)
-- with a URL as `https://www.example.com?abc=123&abc=456` and `abc` in the _Query Key_, your return falue would be `123` and not `456` nor an array of the two values
+- with a URL as `https://www.example.com?gclid=abc123` and `gclid` in the _Query Key_, your return value would be `abc123`
+- with a URL as `https://www.example.com?gclid=abc123` and `xyz` in the _Query Key_, your return value would be `undefined` (or `""`)
+- with a URL as `https://www.example.com?abc=123&abc=456` and `abc` in the _Query Key_, your return value would be `123` and not `456` nor an array of the two values
+
+### Extract Fragment
+Choose _Fragment_ from the _Component Type_ dropdown. This will return any `#foo` type anchor/fragment in the URL.
+
+You can opt to strip the fragment seperator ('#') from the result by checking the formatting option.
+
+### Extract Filename Extension
+Choose _Filename Extension_ from the _Component Type_ dropdown. This will try and find any `.ext` type extension in the page path.
+
+For example:
+- If the path is `/foo/file.pdf` then the return value is `pdf`
+- If the path is `/foo/file` then the return value is undefined (or `""`)
+- If the path is `/foo.bar/file.pdf` then the return value is `pdf`
+- If the path is `/foo.bar/file` then the return value is undefined (or `""`)
+
+These last two are where other templates deviate from this one. I wanted to keep the detection of the extension limited to the possible extension of the final sub-path.
+
+
 
 
 
