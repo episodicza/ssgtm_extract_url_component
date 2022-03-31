@@ -14,6 +14,7 @@ ___INFO___
   "version": 1,
   "securityGroups": [],
   "displayName": "Extract URL Component",
+  "categories": ["UTILITY"],
   "description": "Parse a URL and extract one of its components with flexible formatting options",
   "containerContexts": [
     "SERVER"
