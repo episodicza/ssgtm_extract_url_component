@@ -9,3 +9,42 @@ You can extract:
 - Path
 - Query String or specific Query Parameters with or without the query string seperator ('?')
 - Hash fragment with or without the fragment seperator ('#')
+
+## Why a new template?
+The existing templates (at time of writing) that offer similar functionality are
+- Simo Ahava's [URL Parser](https://github.com/mbaersch/extract-parameters)
+- Markus Baersch's [Extract Parameters From Event Data](https://github.com/mbaersch/extract-parameters)
+
+Both are great tempaltes and served as the inspiration for some of the concepts in this template. However, there were some features and specific parse handling of that I felt were needed in a general purpose variable template like this.
+- Fallback return values for all extraction types (undefined or empty string)
+- the ability to conditionally format the output according to the specific component (e.g. strip query param seperator)
+- better filename extension detection
+
+## How it works
+You simply:
+- choose a source for the URL
+- choose which component you want extracted
+- check any formatting options specific to that component
+
+The tests are reasonably complete and you can see the basics of how it operates there.
+
+The _fallback_ option allows you to specify whether you want the return value to be `undefined` or the empty string `""` if the component you want is not found. The default is to use `undefined`.
+
+### Choose a URL source
+The default is to use the `eventData.page_location` however you can change this to any variable you choose.
+
+### Extract Query String
+Choose _Query Parameters_ from the _Component Type_ dropdown. Leaving the _Query Key_ option blank will extract the entire query string.
+
+You can opt to strip the query string seperator ('?') from the result by checking the formatting option.
+
+### Extract Specific Query Param
+Choose _Query Parameters_ from the _Component Type_ dropdown. Enter a parameter name in the _Query Key_ option. This will scan the query string for that parameter and return the first matching value (URL decoded).
+
+For example:
+- with a URL as `https://www.example.com?gclid=abc123` and `gclid` in the _Query Key_, your return falue would be `abc123`
+- with a URL as `https://www.example.com?gclid=abc123` and `xyz` in the _Query Key_, your return falue would be `undefined` (or `""`)
+- with a URL as `https://www.example.com?abc=123&abc=456` and `abc` in the _Query Key_, your return falue would be `123` and not `456` nor an array of the two values
+
+
+
