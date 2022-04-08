@@ -14,7 +14,7 @@ ___INFO___
   "version": 1,
   "securityGroups": [],
   "displayName": "Extract URL Component",
-  "categories": ["UTILITY"],
+  "categories": ["UTILITY", "ATTRIBUTION"],
   "description": "Parse a URL and extract one of its components with flexible formatting options",
   "containerContexts": [
     "SERVER"
@@ -153,13 +153,13 @@ ___TEMPLATE_PARAMETERS___
 
 ___SANDBOXED_JS_FOR_SERVER___
 
-const decodeUri = require('decodeUri');
 const decodeUriComponent = require('decodeUriComponent');
 const getEventData = require('getEventData');
 const parseUrl = require('parseUrl');
 const getType = require("getType");
+const log = require("logToConsole");
 
-const fallback = (data.useUndefined) ? undefined : "";
+const fallback = data.useUndefined ? undefined : "";
 
 const parsedUrl = parseUrl(data.urlSource === 'event_page_location' ? 
                            getEventData('page_location') : data.urlSource);
@@ -193,7 +193,8 @@ switch (data.componentType) {
         return fallback;
       }
     } else {
-      return data.stripQuestionMark ? parsedUrl.search.replace('?', '') : parsedUrl.search;
+      let q = data.stripQuestionMark ? parsedUrl.search.replace('?', '') : parsedUrl.search;
+      return q ? q : fallback;
     }
 }
 
@@ -221,6 +222,24 @@ ___SERVER_PERMISSIONS___
       "isEditedByUser": true
     },
     "isRequired": true
+  },
+  {
+    "instance": {
+      "key": {
+        "publicId": "logging",
+        "versionId": "1"
+      },
+      "param": [
+        {
+          "key": "environments",
+          "value": {
+            "type": 1,
+            "string": "debug"
+          }
+        }
+      ]
+    },
+    "isRequired": true
   }
 ]
 
@@ -240,18 +259,20 @@ scenarios:
     assertThat(runCode(mockData)).isEqualTo("");
 - name: Test URL Source
   code: |+
-    let url = "https://www.example.com/";
+    const url = 'https://abc:xyz@www.example.com:8080/foo?param1=val1&param1=val2&param2=val3%2Cue#bar';
+
     const mockData = {
       urlSource: 'event_page_location',
-      componentType: 'fullUrl'
+      componentType: 'fullUrl',
+      useUndefined: true
     };
     mock("getEventData", url);
     let variableResult = runCode(mockData);
     assertThat(variableResult).isEqualTo(url);
 
-    mockData.urlSource = "https://www.example.com/2";
+    mockData.urlSource = url;
     variableResult = runCode(mockData);
-    assertThat(variableResult).isEqualTo(mockData.urlSource);
+    assertThat(variableResult).isEqualTo(url);
 
 - name: Test Host Name
   code: |
@@ -318,7 +339,7 @@ scenarios:
 
     assertThat(runCode(mockData)).isEqualTo("8080");
 - name: Test Query
-  code: |-
+  code: |
     let url = "https://abc:xyz@www.example.com:8080/foo?param1=val1&param1=val2&param2=val3%2Cue#bar";
     const mockData = {
       urlSource: url,
@@ -326,27 +347,47 @@ scenarios:
       componentType: 'query'
     };
 
+    // Test extraction of whole query string
     assertThat(runCode(mockData)).isEqualTo("?param1=val1&param1=val2&param2=val3%2Cue");
 
+    // Test extraction of whole query string without query seperator (?)
     mockData.stripQuestionMark = true;
     assertThat(runCode(mockData)).isEqualTo("param1=val1&param1=val2&param2=val3%2Cue");
 
+    // Test above with Query Key explicitely set to empty
     mockData.queryKey = "";
     assertThat(runCode(mockData)).isEqualTo("param1=val1&param1=val2&param2=val3%2Cue");
 
+    // Test extraction of specific querty key. Extracts first matching key value
     mockData.queryKey = "param1";
     assertThat(runCode(mockData)).isEqualTo("val1");
 
+    // Test extraction of query key - value is URI decoded
     mockData.queryKey = "param2";
     assertThat(runCode(mockData)).isEqualTo("val3,ue");
 
+    // Test extraction of query key that is not found
+    mockData.queryKey = "xxx";
+    assertThat(runCode(mockData)).isEqualTo(undefined);
+    // Same but with different fallback option
+    mockData.useUndefined = false;
+    assertThat(runCode(mockData)).isEqualTo("");
+
+    // Test where no query string is present
+    mockData.urlSource = "https://www.example.com";
+    mockData.queryKey = null;
+    mockData.useUndefined = true;
+    assertThat(runCode(mockData)).isEqualTo(undefined);
     mockData.queryKey = "xxx";
     assertThat(runCode(mockData)).isEqualTo(undefined);
 
+    mockData.queryKey = null;
     mockData.useUndefined = false;
     assertThat(runCode(mockData)).isEqualTo("");
+    mockData.queryKey = "xxx";
+    assertThat(runCode(mockData)).isEqualTo("");
 - name: Test Filename Extension
-  code: |+
+  code: |-
     const mockData = {
       urlSource: "https://www.example.com/foo.bar/baz.pdf?p=v.1",
       useUndefined: true,
@@ -364,6 +405,4 @@ scenarios:
 
 ___NOTES___
 
-Created on 31/03/2022, 15:27:06
-
-
+Created on 08/04/2022, 12:37:58
