@@ -1,6 +1,8 @@
 homepage: "https://github.com/episodicza/ssgtm_extract_url_component"
 documentation: "https://github.com/episodicza/ssgtm_extract_url_component#readme"
 versions:
+  - sha: 1e5f704f8e7379d0ef3679b89a2f197828a7cb1c
+    changeNotes: Added URI decoding, fallback handling and tests
   - sha: 8b4acfaeac43c95889c026805d4b6c990218ca06
     changeNotes: Initial release.
     
